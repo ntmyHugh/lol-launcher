@@ -23,13 +23,13 @@
 
 ## 快速开始
 
-1. 运行 `dist\LolLauncher.exe`
+从 [Releases](https://github.com/ntmyHugh/lol-launcher/releases) 下载最新版 `LolLauncher.exe` 和 `LolLauncher.exe.config`，放进任意可写目录。
+
+1. 双击 `LolLauncher.exe`
 2. 首次启动会自动检测游戏目录；也可手动选择或拖入文件夹
 3. 选择“官方登录”或“WeGame 登录”
 
-详细说明见 [dist/使用说明.txt](dist/使用说明.txt)。
-
-如果系统拦截未签名程序，使用 `dist\LOL 启动器.lnk` 启动（详见使用说明的 SmartScreen 一节）。
+详细说明见 [docs/使用说明.txt](docs/使用说明.txt)。
 
 ---
 
@@ -37,19 +37,17 @@
 
 ```text
 .
-├── dist/                     # 可直接运行的发布目录
-│   ├── LolLauncher.exe
-│   ├── LolLauncher.exe.config
-│   ├── start-launcher.vbs    # 启动辅助脚本（绕过 SmartScreen）
-│   ├── LOL 启动器.lnk        # 推荐入口：wscript → vbs → exe
+├── .github/workflows/build.yml   # CI：构建 + 打 tag 自动发布
+├── docs/
 │   └── 使用说明.txt
-├── LolLauncher/              # WPF 源码
+├── LolLauncher/                  # WPF 源码
 │   ├── App.xaml / MainWindow.xaml
-│   ├── ViewModels/           # 状态机与命令
-│   ├── Services/             # 路径探测、进程识别、配置、启动
-│   ├── Themes/               # 深色主题
-│   ├── docs/                 # 界面截图
-│   └── README.md             # 开发说明
+│   ├── ViewModels/               # 状态机与命令
+│   ├── Services/                 # 路径探测、进程识别、配置、启动
+│   ├── Themes/                   # 深色主题
+│   ├── docs/                     # 界面截图
+│   └── README.md                 # 开发说明
+├── README.md
 └── LICENSE
 ```
 
@@ -63,7 +61,14 @@
 dotnet build LolLauncher/LolLauncher.csproj -c Release
 ```
 
-产物：`LolLauncher/bin/Release/net472/LolLauncher.exe`，复制到 `dist` 即可发布。
+产物：`LolLauncher/bin/Release/net472/LolLauncher.exe`。
+
+## 自动构建与发布
+
+由 GitHub Actions（[.github/workflows/build.yml](.github/workflows/build.yml)）完成：
+
+- push 到 `main`：自动用 MSBuild 构建 `net472`，产物上传为 Actions artifact
+- push `v*` 标签：自动创建 GitHub Release，附带 `LolLauncher.exe`、`LolLauncher.exe.config` 和使用说明
 
 ---
 

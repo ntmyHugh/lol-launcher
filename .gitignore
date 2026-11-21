@@ -10,3 +10,6 @@ dist/config.json
 dist/diagnostics.log
 LolLauncher/**/config.json
 LolLauncher/**/diagnostics.log
+
+# release output (distributed via GitHub Releases)
+dist/
