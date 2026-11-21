@@ -1,0 +1,12 @@
+# build output
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# local runtime data
+dist/config.json
+dist/diagnostics.log
+LolLauncher/**/config.json
+LolLauncher/**/diagnostics.log

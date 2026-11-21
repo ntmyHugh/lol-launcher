@@ -1,0 +1,400 @@
+<Window x:Class="LolLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LOL 启动器"
+        Width="920" Height="800"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        FontFamily="{StaticResource AppFont}" FontSize="13"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        Icon="Assets/app.ico"
+        AllowDrop="True" DragOver="Window_DragOver" Drop="Window_Drop">
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                     From="0" To="1" Duration="0:0:0.22" />
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+
+    <Border Margin="20" CornerRadius="16" Background="{StaticResource WindowBg}"
+            BorderBrush="#22304A" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="36" ShadowDepth="0" Opacity="0.55" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="46" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="38" />
+            </Grid.RowDefinitions>
+
+            <!-- ================= 标题栏 ================= -->
+            <Grid Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <StackPanel Orientation="Horizontal" Margin="18,0,0,0" VerticalAlignment="Center">
+                    <Path Width="20" Height="20" Stretch="Fill" Fill="{StaticResource GoldGradient}"
+                          Data="M 10,0 L 20,10 L 10,20 L 0,10 Z" />
+                    <TextBlock Text="LOL 启动器" Margin="10,0,0,0" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" />
+                    <Border Background="#182134" CornerRadius="4" Padding="6,1" Margin="9,0,0,0"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding VersionText}" FontSize="10" Foreground="{StaticResource TextMuted}" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <Button Style="{StaticResource TitleBarButton}" Content="&#xE921;"
+                            ToolTip="最小化" Click="Minimize_Click" />
+                    <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;"
+                            ToolTip="关闭" Click="Close_Click" Margin="0,0,2,0" />
+                </StackPanel>
+            </Grid>
+
+            <!-- ================= 受限环境提示 ================= -->
+            <Border Grid.Row="1" Margin="22,4,22,0" CornerRadius="8" Background="#2A1E0E"
+                    BorderBrush="#5C4520" BorderThickness="1" Padding="12,8"
+                    Visibility="{Binding IsRestrictedEnvironment, Converter={StaticResource BoolToVisibility}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource IconFont}" FontSize="14"
+                               Foreground="{StaticResource Warning}" VerticalAlignment="Top"
+                               Margin="0,1,9,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding EnvironmentWarning}" FontSize="11.5"
+                               Foreground="#E9C97F" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Content="以管理员身份重启" Style="{StaticResource GoldOutlineButton}"
+                            Height="30" Padding="12,0" FontSize="11.5" Margin="12,0,0,0"
+                            VerticalAlignment="Center" Command="{Binding RestartElevatedCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- ================= 主体 ================= -->
+            <Grid Grid.Row="2" Margin="22,8,22,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 状态卡 -->
+                <Border Grid.Row="0" Style="{StaticResource Card}" Padding="20,18">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="94" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Width="74" Height="74" HorizontalAlignment="Left" VerticalAlignment="Top">
+                            <Ellipse Fill="{Binding StatusBrush}" Opacity="0.08" />
+                            <Ellipse Width="48" Height="48" Fill="{Binding StatusBrush}" Opacity="0.16" />
+                            <Ellipse Width="74" Height="74" Stroke="{Binding StatusBrush}" StrokeThickness="1"
+                                     Opacity="0.22" />
+                            <Ellipse Width="18" Height="18" Fill="{Binding StatusBrush}">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsWaiting}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             From="1" To="0.25" Duration="0:0:0.7"
+                                                                             AutoReverse="True" RepeatBehavior="Forever" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                                <DataTrigger.ExitActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             To="1" Duration="0:0:0.2" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.ExitActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                        </Grid>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{Binding StatusTitle}" FontSize="26" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimary}" />
+                            <TextBlock Text="{Binding StatusDetail}" Margin="0,5,0,0" FontSize="12.5"
+                                       Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" />
+
+                            <!-- 等待中的流动光条 -->
+                            <Border Height="3" Margin="0,12,0,0" CornerRadius="2"
+                                    Background="#1B2A44" ClipToBounds="True">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Opacity" Value="0" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsWaiting}" Value="True">
+                                                <Setter Property="Opacity" Value="1" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Border Width="150" HorizontalAlignment="Left">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#00C8AA6E" Offset="0" />
+                                            <GradientStop Color="#C8AA6E" Offset="0.5" />
+                                            <GradientStop Color="#00C8AA6E" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.RenderTransform>
+                                        <TranslateTransform X="-150" />
+                                    </Border.RenderTransform>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsWaiting}" Value="True">
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard x:Name="WaitShimmer">
+                                                            <Storyboard>
+                                                                <DoubleAnimation
+                                                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                                    From="-150" To="760"
+                                                                    Duration="0:0:1.5"
+                                                                    RepeatBehavior="Forever" />
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <RemoveStoryboard BeginStoryboardName="WaitShimmer" />
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+                            </Border>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                <Button Style="{StaticResource PrimaryButton}" Width="190"
+                                        Command="{Binding LaunchOfficialCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE768;" FontFamily="{StaticResource IconFont}"
+                                                   FontSize="13" Margin="0,0,9,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="官方登录" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Style="{StaticResource SecondaryButton}" Width="190" Margin="12,0,0,0"
+                                        Command="{Binding LaunchWeGameCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE7FC;" FontFamily="{StaticResource IconFont}"
+                                                   FontSize="14" Margin="0,0,9,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="WeGame 登录" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+
+                            <Grid Margin="0,15,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Style="{StaticResource Chip}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="6" Height="6" Fill="{Binding WeGameChipBrush}"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0" />
+                                            <TextBlock Text="WeGame" FontSize="11"
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource Chip}" Margin="8,0,0,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="6" Height="6" Fill="{Binding LoginChipBrush}"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0" />
+                                            <TextBlock Text="登录器" FontSize="11"
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource Chip}" Margin="8,0,0,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="6" Height="6" Fill="{Binding LobbyChipBrush}"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0" />
+                                            <TextBlock Text="大厅" FontSize="11"
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource Chip}" Margin="8,0,0,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="6" Height="6" Fill="{Binding GameChipBrush}"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0" />
+                                            <TextBlock Text="对局" FontSize="11"
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <CheckBox Style="{StaticResource OptionCheckBox}"
+                                          Content="大厅启动后自动退出"
+                                          HorizontalAlignment="Right" VerticalAlignment="Center"
+                                          ToolTip="勾选后，进入大厅 3 秒后自动关闭启动器"
+                                          IsChecked="{Binding ExitAfterLobby, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 路径设置 -->
+                <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,12,0,0" Padding="20,15,20,17">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="路径设置" Style="{StaticResource SectionTitle}" />
+                            <Button Content="自动检测" Style="{StaticResource GhostButton}"
+                                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Command="{Binding DetectCommand}" />
+                        </Grid>
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="76" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="26" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="游戏目录" Style="{StaticResource FieldLabel}" />
+                            <TextBox Grid.Column="1" Style="{StaticResource Input}"
+                                     Text="{Binding LolRootPath, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="包含 Game、LeagueClient 等子目录的《英雄联盟》根目录" />
+                            <Button Grid.Column="2" Content="浏览…" Style="{StaticResource SmallButton}"
+                                    Margin="8,0,0,0" Command="{Binding BrowseLolCommand}" />
+                            <TextBlock Grid.Column="3" Text="{Binding LolPathIcon}" FontSize="15"
+                                       Foreground="{Binding LolPathBrush}" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock Text="{Binding LolPathHint}" Margin="76,7,0,0" FontSize="11.5"
+                                   Foreground="{Binding LolHintBrush}" TextTrimming="CharacterEllipsis" />
+
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="76" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="26" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="WeGame" Style="{StaticResource FieldLabel}" />
+                            <TextBox Grid.Column="1" Style="{StaticResource Input}"
+                                     Text="{Binding WeGamePath, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="可选：WeGame.exe 的完整路径" />
+                            <Button Grid.Column="2" Content="浏览…" Style="{StaticResource SmallButton}"
+                                    Margin="8,0,0,0" Command="{Binding BrowseWeGameCommand}" />
+                            <TextBlock Grid.Column="3" Text="{Binding WeGamePathIcon}" FontSize="15"
+                                       Foreground="{Binding WeGamePathBrush}" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock Text="{Binding WeGamePathHint}" Margin="76,7,0,0" FontSize="11.5"
+                                   Foreground="{Binding WeGameHintBrush}" TextTrimming="CharacterEllipsis" />
+
+                        <Grid Margin="0,13,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="保存配置" Style="{StaticResource GoldOutlineButton}"
+                                        Command="{Binding SaveCommand}" />
+                                <Button Content="打开配置文件夹" Style="{StaticResource GhostButton}"
+                                        Margin="6,0,0,0" Command="{Binding OpenConfigCommand}" />
+                                <Button Content="打开游戏目录" Style="{StaticResource GhostButton}"
+                                        Margin="6,0,0,0" Command="{Binding OpenLolFolderCommand}" />
+                            </StackPanel>
+                            <TextBlock Text="也可把游戏文件夹直接拖入窗口"
+                                       FontSize="11" Foreground="{StaticResource TextMuted}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Right"
+                                       Margin="0,0,2,0" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 运行日志 -->
+                <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,12,0,0" Padding="20,14,20,12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid>
+                            <TextBlock Text="运行日志" Style="{StaticResource SectionTitle}" />
+                            <Button Content="清空" Style="{StaticResource GhostButton}"
+                                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Command="{Binding ClearLogsCommand}" />
+                        </Grid>
+
+                        <ListBox x:Name="LogList" Grid.Row="1" Margin="0,7,0,0"
+                                 ItemsSource="{Binding Logs}"
+                                 Background="Transparent" BorderThickness="0" Padding="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 VirtualizingStackPanel.IsVirtualizing="False">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Focusable" Value="False" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <ContentPresenter />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="58" />
+                                            <ColumnDefinition Width="14" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding TimeText}" FontFamily="Consolas"
+                                                   FontSize="11" Foreground="{StaticResource TextMuted}"
+                                                   VerticalAlignment="Top" />
+                                        <Ellipse Grid.Column="1" Width="5" Height="5" Fill="{Binding LevelBrush}"
+                                                 VerticalAlignment="Top" Margin="0,5,0,0" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ================= 底栏 ================= -->
+            <Grid Grid.Row="3" Margin="24,0,24,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="6" Height="6" Fill="{Binding AdminBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding AdminText}" Margin="7,0,0,0" FontSize="11"
+                               Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" />
+                    <TextBlock Text="·" Margin="9,0" FontSize="11" Foreground="{StaticResource TextMuted}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding ConfigPathText}" FontSize="11" Foreground="{StaticResource TextMuted}"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="520"
+                               ToolTip="{Binding ConfigPathText}" />
+                </StackPanel>
+                <TextBlock Text="WPF · .NET Framework 4.8" HorizontalAlignment="Right" VerticalAlignment="Center"
+                           FontSize="10.5" Foreground="{StaticResource TextMuted}" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
