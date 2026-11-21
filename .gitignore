@@ -17,3 +17,6 @@ dist/
 # local build caches
 .nuget/
 .dotnet-home/
+
+# local preview snapshots
+shot-*.png
