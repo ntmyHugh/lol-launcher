@@ -13,3 +13,7 @@ LolLauncher/**/diagnostics.log
 
 # release output (distributed via GitHub Releases)
 dist/
+
+# local build caches
+.nuget/
+.dotnet-home/

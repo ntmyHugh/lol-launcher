@@ -22,7 +22,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build (net472 / WPF)
-        run: msbuild LolLauncher\LolLauncher.csproj /p:Configuration=Release /p:Platform=AnyCPU /v:minimal
+        run: msbuild LolLauncher\LolLauncher.csproj /restore /p:Configuration=Release /p:Platform=AnyCPU /v:minimal
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
