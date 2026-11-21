@@ -146,7 +146,7 @@ namespace LolLauncher.ViewModels
 
         public string VersionText
         {
-            get { return "v2.2.0"; }
+            get { return "v2.2.1"; }
         }
 
         public string ConfigPathText

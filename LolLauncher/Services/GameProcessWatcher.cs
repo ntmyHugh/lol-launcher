@@ -17,8 +17,10 @@ namespace LolLauncher.Services
 
     /// <summary>
     /// 用一次枚举同时判断 WeGame、登录器、大厅、对局四类进程。
-    /// 登录器 / 大厅 / 对局会额外校验可执行文件是否位于游戏目录下，
-    /// 避免把同名的其他程序误判进来。
+    /// 登录器有两条链路：
+    ///   · 官方登录：Launcher\Client.exe（进程名 Client）
+    ///   · WeGame 登录：Riot Client 的 RiotClientServices.exe（腾讯 SSO 登录窗口）
+    /// 大厅 / 对局按独特的进程名判断。
     /// </summary>
     public static class GameProcessWatcher
     {
@@ -26,6 +28,7 @@ namespace LolLauncher.Services
         {
             "WeGame",
             "Client",
+            "RiotClientServices",
             "LeagueClient",
             "LeagueClientUx",
             "League of Legends"
@@ -59,6 +62,16 @@ namespace LolLauncher.Services
                         {
                             // Client.exe 太常见，必须确认在游戏目录下。
                             if (IsUnderRoot(TryGetPath(process), lolRoot))
+                            {
+                                snapshot.Login = true;
+                            }
+                        }
+                        else if (string.Equals(name, "RiotClientServices", StringComparison.Ordinal))
+                        {
+                            // WeGame 登录链路：Riot Client 负责账号认证（腾讯 SSO）。
+                            // 路径可读时校验是否属于本游戏目录，读不到时按名字判断。
+                            var riotPath = TryGetPath(process);
+                            if (riotPath == null || IsUnderRoot(riotPath, lolRoot))
                             {
                                 snapshot.Login = true;
                             }

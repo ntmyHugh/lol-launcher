@@ -1,4 +1,4 @@
-# LOL 启动器 v2.2.0
+# LOL 启动器 v2.2.1
 
 英雄联盟桌面启动器，**WPF + .NET Framework 4.8** 实现。支持官方登录与 WeGame 两种启动方式，带路径自动探测、实时状态面板和运行日志。
 
@@ -19,7 +19,7 @@
 | 路径配置 | 自动检测 / 浏览选择 / 拖拽文件夹；校验 `Cross`、`Game`、`Launcher`、`LeagueClient` 四个子目录与 `Launcher\Client.exe` |
 | 状态面板 | 未配置 → 就绪 → 正在启动 → 等待启动 → 等待登录 → 已进入大厅 → 对局中 → 已退出 / 启动失败 |
 | 等待反馈 | 等待阶段状态灯呼吸、状态卡下方金色流光条持续流动，明确表示“正在等待” |
-| 进程指示灯 | WeGame、登录器（`Launcher\Client.exe`）、大厅（`LeagueClient`）、对局（`League of Legends`）四个独立指示 |
+| 进程指示灯 | WeGame、登录器、大厅三个独立指示（登录器兼容官方 Launcher\Client.exe 与 WeGame 的 RiotClientServices） |
 | 运行日志 | 带时间戳与级别（信息 / 成功 / 警告 / 错误），自动滚动、可清空 |
 | 自动退出 | 可选：进入大厅后倒计时 3 秒自动关闭启动器（不关闭游戏），设置写入 `config.json` |
 | 配置 | `config.json` 与 exe 同目录，便携；兼容旧版启动器的 `LOL_ROOT_PATH` 字段 |
@@ -73,7 +73,7 @@ LolLauncher/
 ## 实现要点
 
 - **MVVM 轻量实现**：`ObservableObject` + `RelayCommand`，不引入 MVVM 框架；状态由 `LaunchState` 枚举驱动。
-- **1 秒轮询**：`DispatcherTimer` 刷新四个进程指示灯，并推进状态机（启动器退出、登录器出现、进入大厅、进入对局、游戏退出）。
+- **1 秒轮询**：`DispatcherTimer` 刷新三个进程指示灯，并推进状态机（启动器退出、登录器出现、进入大厅、进入对局、游戏退出）。
 - **进程识别**：`GameProcessWatcher` 一次枚举同时判断四类进程；`Client.exe` 会额外校验可执行文件位于游戏目录下，避免同名误判，`LeagueClient` / `League of Legends` 按独特进程名判断。
 - **无外部依赖**：JSON 读写是内置的极简实现，UI 全部手写样式，`net472` 编译产物只有一个 exe。
 - **自动退出**：进入大厅后由独立的 `DispatcherTimer` 做 3 秒倒计时，关闭窗口但保留已启动的游戏进程；取消勾选立即中止倒计时。
