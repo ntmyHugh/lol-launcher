@@ -21,6 +21,9 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Prepare release assets
+        run: Copy-Item 'docs\使用说明.txt' 'docs\usage-zh.txt' -Force
+
       - name: Build (net472 / WPF)
         run: msbuild LolLauncher\LolLauncher.csproj /restore /p:Configuration=Release /p:Platform=AnyCPU /v:minimal
 
@@ -31,7 +34,14 @@ jobs:
           path: |
             LolLauncher/bin/Release/net472/LolLauncher.exe
             LolLauncher/bin/Release/net472/LolLauncher.exe.config
-            docs/使用说明.txt
+            docs/usage-zh.txt
+
+      - name: Remove existing release for this tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete ${{ github.ref_name }} --yes
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -42,4 +52,4 @@ jobs:
           files: |
             LolLauncher/bin/Release/net472/LolLauncher.exe
             LolLauncher/bin/Release/net472/LolLauncher.exe.config
-            docs/使用说明.txt
+            docs/usage-zh.txt
